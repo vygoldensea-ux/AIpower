@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import Link from 'next/link'
 
 const statCards = [
@@ -10,7 +10,7 @@ const statCards = [
 ]
 
 export default function DashboardPage() {
-  const [stats, setStats] = useState({ clients: 0, pending: 0, scheduled: 0, published: 0 })
+  const [stats] = useState({ clients: 0, pending: 0, scheduled: 0, published: 0 })
 
   return (
     <div style={{ maxWidth: 1200, margin: '0 auto', padding: '24px 16px' }}>
