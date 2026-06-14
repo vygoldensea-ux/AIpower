@@ -2,14 +2,16 @@ import axios from 'axios'
 import { log } from '@/lib/utils/logger'
 
 export async function sendTelegramMessage(chatId: string, text: string) {
+  const token = process.env.TELEGRAM_BOT_TOKEN
+  // Thử gửi không có parse_mode trước (safe)
   try {
-    await axios.post(`https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/sendMessage`, {
+    const res = await axios.post(`https://api.telegram.org/bot${token}/sendMessage`, {
       chat_id: chatId,
       text,
-      parse_mode: 'Markdown'
     })
+    log('TELEGRAM', 'success', `Sent to ${chatId} — msg_id: ${res.data?.result?.message_id}`)
   } catch (error: any) {
-    log('TELEGRAM', 'error', error.message)
+    log('TELEGRAM', 'error', `Send failed to ${chatId}: ${error.response?.data?.description || error.message}`)
     throw error
   }
 }
