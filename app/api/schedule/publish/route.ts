@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic'
 import { NextRequest, NextResponse } from 'next/server'
 import { publishScheduledPost } from '@/lib/modules/module4-scheduler'
 import { log } from '@/lib/utils/logger'

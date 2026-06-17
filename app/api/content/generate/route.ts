@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic'
 import { NextRequest, NextResponse } from 'next/server'
 import { generateContent } from '@/lib/modules/module2-content-brain'
 import { log } from '@/lib/utils/logger'

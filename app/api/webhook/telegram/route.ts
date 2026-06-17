@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic'
 import { NextRequest, NextResponse } from 'next/server'
 import { handleBriefBot } from '@/lib/modules/module1-brief-bot'
 import { supabaseAdmin } from '@/lib/supabase/client'

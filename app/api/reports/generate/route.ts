@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic'
 import { NextRequest, NextResponse } from 'next/server'
 import { generateWeeklyReport } from '@/lib/modules/module5-reporting'
 import { log } from '@/lib/utils/logger'

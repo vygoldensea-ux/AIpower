@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic'
 import { NextRequest, NextResponse } from 'next/server'
 import { generateVisual } from '@/lib/modules/module3-visual-engine'
 import { log } from '@/lib/utils/logger'
