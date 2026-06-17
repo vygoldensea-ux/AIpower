@@ -175,10 +175,12 @@ Trigger: "hẹn giờ", "đăng lúc", "schedule", "lên plan", "đăng ngày", 
 → schedule_plan_topics: array of {day: "Monday", date: "2026-06-22", topic: "...", angle: "..."}
 
 ### Mode E — Weekly plan
-Trigger: "lên plan tuần", "kế hoạch tuần", "plan 7 ngày", "content calendar"
+Trigger: "lên plan tuần", "kế hoạch tuần", "plan 7 ngày", "content calendar", "soạn content cho 1 tuần", "viết N bài", "viết cho tuần"
 → type = "weekly_plan"
-→ Generate 7 posts plan based on Vy's content cadence from skill_context
-→ schedule_plan_topics: [{day, date, topic, angle, suggested_time}]
+→ Generate plan based on how many posts requested (default 7 if not specified)
+→ schedule_plan_topics: [{day, date (YYYY-MM-DD), topic, angle, suggested_time (ISO 8601 UTC)}]
+→ ONLY return topic + angle + date per item. Do NOT write full posts here — code handles that separately.
+→ Keep JSON small: no draft_post, no image_brief inside topics
 
 ### Mode C — General chat
 Everything else. Reply naturally in {language}. No corporate stiffness.

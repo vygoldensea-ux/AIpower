@@ -173,7 +173,7 @@ export async function handleContentRequest(params: {
   const parsed = await callClaude({
     systemPrompt,
     userMessage: userPayload,
-    maxTokens: 1500,
+    maxTokens: 2500,
     temperature: 0.4,
     module: 'MODULE_9C',
     clientId: params.client.id,
@@ -232,18 +232,78 @@ export async function handleContentRequest(params: {
     return
   }
 
-  // Weekly plan
+  // Weekly plan — write each post individually then schedule
   if (result.type === 'weekly_plan') {
     const topics = result.schedule_plan_topics || []
     if (!topics.length) {
       await send('Không generate được plan. Thử lại: "lên plan content tuần này cho tao".')
       return
     }
-    const planText = `Kế hoạch content tuần này:\n\n${topics.map((t: any) =>
-      `${t.day} ${t.date ? `(${t.date})` : ''} — ${t.topic}\nGóc nhìn: ${t.angle}\nGiờ đăng: ${t.suggested_time || '10:00'}`
-    ).join('\n\n')}\n\nNhắn "viết bài [ngày]" để tao draft từng bài. Nhắn "hẹn giờ tự đăng" để set lịch auto.`
-    await saveMessage(params.client.id, 'assistant', planText)
-    await send(planText)
+
+    const planPreview = topics.map((t: any, i: number) =>
+      `${i + 1}. ${t.day}${t.date ? ` (${t.date})` : ''} — ${t.topic}`
+    ).join('\n')
+    await send(`OK Vy, tao sẽ viết ${topics.length} bài và lên lịch tự động. Đang viết...\n\n${planPreview}`)
+
+    const { PROMPT_2B_CONTENT_GENERATOR } = await import('@/lib/prompts/p2-content')
+    const ragContext = await buildRagContext(params.client.id, 'linkedin content AI automation outsourcing')
+    let scheduled = 0
+
+    for (const t of topics) {
+      try {
+        // Write full post for this topic
+        const postRaw = await callClaude({
+          systemPrompt: PROMPT_2B_CONTENT_GENERATOR
+            .replace('{rag_context_block}', ragContext)
+            .replace('{industry_content_skill}', skills.content)
+            .replace('{platform}', 'linkedin')
+            .replace('{content_type}', 'regular')
+            .replace('{topic}', `${t.topic}. Angle: ${t.angle || ''}`)
+            .replace('{language}', 'en')
+            .replace('{week_theme}', ''),
+          userMessage: 'Write the LinkedIn post now.',
+          maxTokens: 900,
+          temperature: 0.5,
+          module: 'MODULE_9C_WEEKLY',
+          clientId: params.client.id,
+        })
+
+        const postData = parseClaudeJson<any>(postRaw)
+        const postText = postData.copy || postRaw
+
+        // Parse schedule time — t.suggested_time is ISO or "10:00"
+        let scheduledAt: Date | null = null
+        if (t.date) {
+          // Build ISO from date + 10:00 ICT (UTC+7 = 03:00 UTC)
+          scheduledAt = new Date(`${t.date}T03:00:00.000Z`)
+        } else if (t.suggested_time && t.suggested_time.includes('T')) {
+          scheduledAt = new Date(t.suggested_time)
+        }
+
+        const postCode = `WEEK_${params.client.id.slice(0, 8)}_${t.date || Date.now()}`
+        await supabaseAdmin.from('content_queue').insert({
+          client_id: params.client.id,
+          post_code: postCode,
+          platforms: ['linkedin'],
+          content_type: 'regular',
+          copy_en: postText,
+          status: scheduledAt ? 'scheduled' : 'draft',
+          scheduled_at: scheduledAt?.toISOString() || null,
+          visual_brief: t.topic,
+        })
+        scheduled++
+      } catch (e: any) {
+        log('MODULE_9C_WEEKLY', 'warn', `Failed to write post for ${t.topic}: ${e.message}`)
+      }
+    }
+
+    const summary = `Xong! Đã viết và lên lịch ${scheduled}/${topics.length} bài:\n\n${topics.map((t: any) => {
+      const time = t.date ? `${t.date} 10:00` : 'chưa có giờ'
+      return `• ${t.day}${t.date ? ` (${t.date})` : ''} lúc ${time} — ${t.topic}`
+    }).join('\n')}\n\nBot sẽ tự đăng lên LinkedIn đúng giờ. Nhắn "xem bài [thứ/ngày]" để review trước.`
+
+    await saveMessage(params.client.id, 'assistant', summary)
+    await send(summary)
     return
   }
 
