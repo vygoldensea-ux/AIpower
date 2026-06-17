@@ -59,6 +59,14 @@ export async function callClaude(options: ClaudeCallOptions): Promise<string> {
 }
 
 export function parseClaudeJson<T>(rawText: string): T {
-  const cleaned = rawText.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim()
-  return JSON.parse(cleaned) as T
+  // Extract JSON block even if Claude adds extra text around it
+  const jsonMatch = rawText.match(/```json\s*([\s\S]*?)```/) ||
+                    rawText.match(/```\s*([\s\S]*?)```/)
+  if (jsonMatch) return JSON.parse(jsonMatch[1].trim()) as T
+
+  // Try to find a raw JSON object
+  const objMatch = rawText.match(/(\{[\s\S]*\})/)
+  if (objMatch) return JSON.parse(objMatch[1]) as T
+
+  return JSON.parse(rawText.trim()) as T
 }

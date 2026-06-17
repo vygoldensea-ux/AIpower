@@ -10,7 +10,7 @@
 Creative design & development agency specializing in IT outsourcing, AI automation, and digital product development for international clients.
 
 ## Key Numbers (use as proof points)
-- 9+ years in operation
+- 5 years in operation, now entering year 6
 - 80+ projects completed
 - 1,000+ clients served
 - Awards: Awwwards, CSS Design Awards, Webflow Showcase (2021–2025)
@@ -191,7 +191,7 @@ Here is what actually happened.
 - 700+ procurement leads automated per week
 - Senior Full-Stack Vietnam: $1,600/month vs US: $9,600/month
 - Annual savings 5-person team VN vs US: $462,000
-- GoldenSea: 80+ projects, 1,000+ clients, 9+ years
+- GoldenSea: 80+ projects, 1,000+ clients, 5 years in operation (now entering year 6)
 
 ## Weekly Content Cadence (from proven data)
 - Monday: Cost comparison data (visual card)
@@ -278,3 +278,26 @@ Source: Glassdoor, Talent JDI, Second Talent
 - Vietnam IT workforce: 560,000+ professionals, growing 20% annually.
 - The window to hire at this advantage is narrowing.
 - Companies that built Vietnam teams 3 years ago are not switching back.
+
+---
+
+## Visual Output Rule
+
+Every post output MUST include a matching image.
+
+### Auto-routing:
+- Post has salary numbers / cost comparison → TYPE 1 (Data/Comparison)
+- Post has steps / process / framework / BD tips → TYPE 2 (Educational)
+
+### Output format per post:
+1. LinkedIn post copy (ready to paste)
+2. Alt hooks (2 alternatives)
+3. CTA suggestion
+4. HTML image file (900×900, TYPE 1 or TYPE 2, full code ready to screenshot)
+
+### Image color system (GoldenSea Gold Edition):
+- Gold #C9A84C — bars, borders, accents (NOT cyan)
+- Yellow #F5A623 — key numbers, Vietnam row, 1 highlight phrase
+- Black #0A0A0A — headlines, Vietnam background row
+- White #FFFFFF — canvas background
+- Brand marker top-right: gold square + yellow dot

@@ -10,7 +10,7 @@
 Creative design & development agency specializing in IT outsourcing, AI automation, and digital product development for international clients.
 
 ## Key Numbers (use as proof points)
-- 9+ years in operation
+- 5 years in operation, now entering year 6
 - 80+ projects completed
 - 1,000+ clients served
 - Awards: Awwwards, CSS Design Awards, Webflow Showcase (2021–2025)

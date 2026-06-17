@@ -5,6 +5,7 @@ export interface IndustrySkills {
   content: string
   image: string
   video: string
+  newsContext: string
 }
 
 const INDUSTRY_MAP: Record<string, string> = {
@@ -57,5 +58,6 @@ export function loadIndustrySkills(industry: string): IndustrySkills {
     content: load('content-skill.md'),
     image: load('image-skill.md'),
     video: load('video-skill.md'),
+    newsContext: load('ai-news-context.md'),
   }
 }

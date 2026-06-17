@@ -146,7 +146,7 @@ Here is what actually happened.
 - 700+ procurement leads automated per week
 - Senior Full-Stack Vietnam: $1,600/month vs US: $9,600/month
 - Annual savings 5-person team VN vs US: $462,000
-- GoldenSea: 80+ projects, 1,000+ clients, 9+ years
+- GoldenSea: 80+ projects, 1,000+ clients, 5 years in operation (now entering year 6)
 
 ## Weekly Content Cadence (from proven data)
 - Monday: Cost comparison data (visual card)
