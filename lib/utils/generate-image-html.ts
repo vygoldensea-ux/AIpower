@@ -51,8 +51,8 @@ export function generateComparisonHTML(data: ImageData): string {
   const rows = data.rows || []
   const maxAmount = Math.max(...rows.map(r => r.amount), 1)
 
-  // Strip emoji from badge — Puppeteer headless can't render flag emoji
-  const cleanBadge = (b: string) => b.replace(/[\u{1F300}-\u{1FFFF}]/gu, '').replace(/[\u{FE00}-\u{FE0F}]/gu, '').trim() || b.slice(0, 3)
+  // Strip non-ASCII chars (emoji, flags) — Puppeteer headless can't render them
+  const cleanBadge = (b: string) => b.replace(/[^\x00-\x7F]/g, '').trim() || b.slice(0, 3)
 
   const rowsHTML = rows.map(r => {
     const pct = Math.round((r.amount / maxAmount) * 100)
