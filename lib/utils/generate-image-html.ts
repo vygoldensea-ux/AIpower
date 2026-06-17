@@ -223,18 +223,6 @@ export function generateMindMapHTML(data: ImageData): string {
   const branches = data.branches || []
   const colors = ['#C9A84C', '#F5A623', '#0A0A0A', '#888888']
 
-  const branchHTML = branches.map((b, i) => {
-    const col = colors[i % colors.length]
-    const items = b.items.map(item =>
-      `<div style="font-size:12px;color:#344054;padding:4px 10px;background:#F9F6EE;border-radius:6px;margin-bottom:4px;border-left:3px solid ${col};">${item}</div>`
-    ).join('')
-    return `
-    <div style="background:#FFFDF5;border:2px solid ${col};border-radius:12px;padding:14px 16px;flex:1;min-width:0;">
-      <div style="font-size:13px;font-weight:800;color:${col};text-transform:uppercase;letter-spacing:0.8px;margin-bottom:10px;">${b.label}</div>
-      ${items}
-    </div>`
-  }).join('')
-
   const row1 = branches.slice(0, 2)
   const row2 = branches.slice(2, 4)
 
@@ -297,7 +285,6 @@ export function generateDataTableHTML(data: ImageData): string {
   const rowsHTML = rows.map((r, ri) => {
     const isHL = ri === hlRow
     const bg = isHL ? '#0A0A0A' : ri % 2 === 0 ? '#FFFDF5' : '#FFFFFF'
-    const color = isHL ? '#FFFFFF' : '#0A0A0A'
     const cells = r.map((cell, ci) => {
       const isFirst = ci === 0
       const cellColor = isHL ? (isFirst ? '#F5A623' : '#FFFFFF') : (isFirst ? '#0A0A0A' : '#344054')
