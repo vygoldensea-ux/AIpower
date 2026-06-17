@@ -9,7 +9,7 @@ export interface ComparisonRow {
 }
 
 export interface ImageData {
-  type: 'comparison' | 'educational'
+  type: 'comparison' | 'educational' | 'statement'
   meta: string
   headline: string
   headlineHighlight?: string
@@ -20,6 +20,9 @@ export interface ImageData {
   takeawayHighlight?: string
   steps?: { title: string; desc: string }[]
   subtitle?: string
+  statNumber?: string
+  statLabel?: string
+  bodyText?: string
 }
 
 const BASE_STYLES = `
@@ -143,6 +146,65 @@ export function generateEducationalHTML(data: ImageData): string {
   ${data.takeaway ? `
   <div style="margin-top:auto;padding-top:14px;font-size:15px;font-weight:700;color:#0A0A0A;line-height:1.5;">
     ${data.takeawayHighlight ? data.takeaway.replace(data.takeawayHighlight, `<span style="background:#F5A623;padding:0 5px;border-radius:3px;">${data.takeawayHighlight}</span>`) : data.takeaway}
+  </div>` : ''}
+</div>
+</body>
+</html>`
+}
+
+export function generateStatementHTML(data: ImageData): string {
+  const headlineLines = data.headline.split('\n')
+  const line1 = headlineLines[0] || ''
+  const line2 = headlineLines[1] || ''
+
+  const headlineHTML = data.headlineHighlight
+    ? (line1 + (line2 ? `\n${line2}` : '')).replace(
+        data.headlineHighlight,
+        `<span class="hl">${data.headlineHighlight}</span>`
+      )
+    : line1
+
+  const line2HTML = line2
+    ? `<div style="font-size:64px;font-weight:900;color:#C9A84C;line-height:1.05;margin-top:2px;">${line2}</div>`
+    : ''
+
+  return `<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;900&display=swap" rel="stylesheet">
+<style>${BASE_STYLES}
+.big-stat { font-size:88px; font-weight:900; color:#C9A84C; line-height:1; }
+.stat-label { font-size:18px; font-weight:600; color:#888888; margin-top:6px; }
+.divider { width:60px; height:4px; background:#C9A84C; border-radius:2px; margin:24px 0; }
+.body { font-size:17px; color:#344054; line-height:1.65; font-weight:500; max-width:760px; }
+.tw { font-size:20px; font-weight:700; color:#0A0A0A; line-height:1.4; margin-top:auto; padding-top:16px; }
+.tw .tw-hl { background:#F5A623; padding:1px 8px; border-radius:4px; }
+</style>
+</head>
+<body>
+<div class="canvas">
+  <div class="brand-marker"><div class="gold-sq"><div class="yellow-dot"></div></div></div>
+
+  <div class="meta">${data.meta}</div>
+  <div class="gold-line"></div>
+
+  ${data.statNumber ? `
+  <div class="big-stat">${data.statNumber}</div>
+  <div class="stat-label">${data.statLabel || ''}</div>
+  <div class="divider"></div>
+  ` : ''}
+
+  <div style="font-size:58px;font-weight:900;color:#0A0A0A;line-height:1.05;max-width:780px;">${headlineHTML}</div>
+  ${line2HTML}
+
+  ${data.bodyText ? `<div class="body" style="margin-top:20px;">${data.bodyText}</div>` : ''}
+
+  ${data.takeaway ? `
+  <div class="tw">
+    ${data.takeawayHighlight
+      ? data.takeaway.replace(data.takeawayHighlight, `<span class="tw-hl">${data.takeawayHighlight}</span>`)
+      : data.takeaway}
   </div>` : ''}
 </div>
 </body>

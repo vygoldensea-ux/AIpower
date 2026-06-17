@@ -188,47 +188,52 @@ Everything else. Reply naturally in {language}. No corporate stiffness.
 `
 
 export const PROMPT_9C_IMAGE_GENERATOR = `
-You are a visual data extractor for LinkedIn image generation.
-
-Given a LinkedIn post, extract structured data to generate a 900x900 image.
+You are a visual director for LinkedIn 900x900 images. Given a post, choose the RIGHT image type and extract data.
 
 Post:
 {post}
 
-Image skill reference:
-{image_skill}
+## TYPE ROUTING — choose exactly one:
 
-## Rules:
-- If post has salary numbers / cost comparison → type: "comparison"
-- If post has steps / process / framework / BD tips → type: "educational"
-- Extract ONLY real data from the post — no invented numbers
-- meta: short uppercase label e.g. "SENIOR DEV • 5 MARKETS • 2026"
-- headline: max 2 short lines (split with \\n if needed)
-- headlineHighlight: 1-3 words to highlight in yellow
-- For comparison: rows with badge (US/UK/DE/SG/IN/VN), label, value string, amount (number for bar)
-- Mark Vietnam row as isHighlight: true
-- insightNumber: the biggest savings/impact number e.g. "$462,000"
-- takeaway: 1 punchy line
-- takeawayHighlight: 1-2 words to highlight
+### TYPE "comparison" — ONLY if post has explicit salary/cost numbers with country comparisons
+Signs: "$X,XXX/month", "US vs Vietnam", salary table, ROI math, cost gap with actual numbers
+Example headline: "Same skill.\nDifferent cost."
 
-## Output JSON only:
+### TYPE "educational" — ONLY if post is a clear step-by-step process, framework, or checklist
+Signs: "Step 1...", "Here is how...", numbered list of actions, explicit workflow
+Example headline: "How I qualify\na lead in 5 min"
+
+### TYPE "statement" — for narrative, story, opinion, insight posts (DEFAULT when unsure)
+Signs: personal story, journey, opinion, contrarian take, lessons learned, company update
+This is the most common type. Use it for storytelling posts.
+Example: Post about GoldenSea's 5-year journey → statement
+Example: Post about "AI kills average processes" insight → statement
+
+## RULES:
+- Extract ONLY real data from the post. No invented numbers.
+- meta: uppercase, max 5 words, e.g. "GOLDENSEA • AI ADOPTION • 2025"
+- headline: max 2 short punchy lines. Line 2 goes in gold color automatically.
+- headlineHighlight: 1-3 words from line 1 to show in yellow (statement type only)
+- For statement: statNumber = the single most impactful number in the post (e.g. "#2", "700+", "5 years"). statLabel = what it means.
+- bodyText: 1-2 sentences max, the core insight (statement type only)
+- takeaway: 1 punchy closing line
+- takeawayHighlight: 2-3 words to highlight on yellow background
+
+## OUTPUT JSON only — no text outside:
 {
-  "type": "comparison",
+  "type": "statement",
   "meta": "",
   "headline": "",
   "headlineHighlight": "",
-  "rows": [
-    { "badge": "US", "label": "US", "value": "$9,600", "amount": 9600, "isHighlight": false },
-    { "badge": "VN", "label": "VN", "value": "$1,600", "amount": 1600, "isHighlight": true }
-  ],
-  "insightNumber": "$462,000",
-  "insightLabel": "",
+  "statNumber": "",
+  "statLabel": "",
+  "bodyText": "",
   "takeaway": "",
   "takeawayHighlight": "",
+  "rows": [],
+  "insightNumber": "",
+  "insightLabel": "",
   "steps": [],
   "subtitle": ""
 }
-
-For educational type, fill steps array: [{ "title": "Step name", "desc": "1 short line" }]
-NEVER output text outside the JSON.
 `

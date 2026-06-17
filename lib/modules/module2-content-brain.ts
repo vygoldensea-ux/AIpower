@@ -4,7 +4,7 @@ import { loadIndustrySkills } from '@/lib/skills/loader'
 import { supabaseAdmin } from '@/lib/supabase/client'
 import { log } from '@/lib/utils/logger'
 import { fetchLatestAINews } from '@/lib/utils/fetch-news'
-import { generateComparisonHTML, generateEducationalHTML } from '@/lib/utils/generate-image-html'
+import { generateComparisonHTML, generateEducationalHTML, generateStatementHTML } from '@/lib/utils/generate-image-html'
 import {
   PROMPT_2A_TOPIC_SUGGESTER,
   PROMPT_2B_CONTENT_GENERATOR,
@@ -257,6 +257,8 @@ export async function handleContentRequest(params: {
         html = generateComparisonHTML(imgData)
       } else if (imgData.type === 'educational') {
         html = generateEducationalHTML(imgData)
+      } else if (imgData.type === 'statement') {
+        html = generateStatementHTML(imgData)
       }
 
       if (html) {
