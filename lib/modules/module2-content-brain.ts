@@ -4,7 +4,7 @@ import { loadIndustrySkills } from '@/lib/skills/loader'
 import { supabaseAdmin } from '@/lib/supabase/client'
 import { log } from '@/lib/utils/logger'
 import { fetchLatestAINews } from '@/lib/utils/fetch-news'
-import { generateComparisonHTML, generateEducationalHTML, generateStatementHTML } from '@/lib/utils/generate-image-html'
+import { generateComparisonHTML, generateEducationalHTML, generateStatementHTML, generateMindMapHTML, generateDataTableHTML } from '@/lib/utils/generate-image-html'
 import {
   PROMPT_2A_TOPIC_SUGGESTER,
   PROMPT_2B_CONTENT_GENERATOR,
@@ -203,6 +203,50 @@ export async function handleContentRequest(params: {
     return
   }
 
+  // Schedule post
+  if (result.type === 'schedule') {
+    const postText = result.post_content
+    if (!postText) {
+      await send('Chưa có bài nào để hẹn giờ. Viết bài trước rồi nhắn "hẹn đăng lúc 10h" nhé.')
+      return
+    }
+    const scheduledAt = result.schedule_time ? new Date(result.schedule_time) : null
+    if (!scheduledAt || isNaN(scheduledAt.getTime())) {
+      await send('Không hiểu giờ hẹn. Thử lại kiểu: "hẹn đăng lúc 10h sáng ngày mai".')
+      return
+    }
+    const postCode = `SCHED_${params.client.id.slice(0, 8)}_${Date.now()}`
+    await supabaseAdmin.from('content_queue').insert({
+      client_id: params.client.id,
+      post_code: postCode,
+      platforms: result.platforms || ['linkedin'],
+      content_type: 'regular',
+      copy_en: postText,
+      status: 'scheduled',
+      scheduled_at: scheduledAt.toISOString(),
+    })
+    const timeStr = scheduledAt.toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh', hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit' })
+    const msg = `Đã hẹn lịch đăng lúc ${timeStr}. Bot sẽ tự đăng lên LinkedIn đúng giờ.`
+    await saveMessage(params.client.id, 'assistant', msg)
+    await send(msg)
+    return
+  }
+
+  // Weekly plan
+  if (result.type === 'weekly_plan') {
+    const topics = result.schedule_plan_topics || []
+    if (!topics.length) {
+      await send('Không generate được plan. Thử lại: "lên plan content tuần này cho tao".')
+      return
+    }
+    const planText = `Kế hoạch content tuần này:\n\n${topics.map((t: any) =>
+      `${t.day} ${t.date ? `(${t.date})` : ''} — ${t.topic}\nGóc nhìn: ${t.angle}\nGiờ đăng: ${t.suggested_time || '10:00'}`
+    ).join('\n\n')}\n\nNhắn "viết bài [ngày]" để tao draft từng bài. Nhắn "hẹn giờ tự đăng" để set lịch auto.`
+    await saveMessage(params.client.id, 'assistant', planText)
+    await send(planText)
+    return
+  }
+
   // Publish intent — user wants to post what was just written
   if (result.type === 'publish') {
     const postText = result.post_content || result.draft_post
@@ -246,8 +290,11 @@ export async function handleContentRequest(params: {
           html = generateComparisonHTML(brief)
         } else if (brief.type === 'educational' && brief.steps?.length) {
           html = generateEducationalHTML(brief)
+        } else if (brief.type === 'mindmap' && brief.branches?.length) {
+          html = generateMindMapHTML(brief)
+        } else if (brief.type === 'datatable' && brief.tableRows?.length) {
+          html = generateDataTableHTML(brief)
         } else {
-          // Default to statement for anything else
           brief.type = 'statement'
           html = generateStatementHTML(brief)
         }

@@ -9,9 +9,10 @@ export interface ComparisonRow {
 }
 
 export interface ImageData {
-  type: 'comparison' | 'educational' | 'statement'
+  type: 'comparison' | 'educational' | 'statement' | 'mindmap' | 'datatable'
   meta: string
   headline: string
+  headline_line2?: string
   headlineHighlight?: string
   rows?: ComparisonRow[]
   insightNumber?: string
@@ -23,6 +24,13 @@ export interface ImageData {
   statNumber?: string
   statLabel?: string
   bodyText?: string
+  // mindmap
+  centerNode?: string
+  branches?: { label: string; items: string[] }[]
+  // datatable
+  tableHeaders?: string[]
+  tableRows?: string[][]
+  tableHighlightRow?: number
 }
 
 const BASE_STYLES = `
@@ -204,6 +212,130 @@ export function generateStatementHTML(data: ImageData): string {
   <div class="tw">
     ${data.takeawayHighlight
       ? data.takeaway.replace(data.takeawayHighlight, `<span class="tw-hl">${data.takeawayHighlight}</span>`)
+      : data.takeaway}
+  </div>` : ''}
+</div>
+</body>
+</html>`
+}
+
+export function generateMindMapHTML(data: ImageData): string {
+  const branches = data.branches || []
+  const colors = ['#C9A84C', '#F5A623', '#0A0A0A', '#888888']
+
+  const branchHTML = branches.map((b, i) => {
+    const col = colors[i % colors.length]
+    const items = b.items.map(item =>
+      `<div style="font-size:12px;color:#344054;padding:4px 10px;background:#F9F6EE;border-radius:6px;margin-bottom:4px;border-left:3px solid ${col};">${item}</div>`
+    ).join('')
+    return `
+    <div style="background:#FFFDF5;border:2px solid ${col};border-radius:12px;padding:14px 16px;flex:1;min-width:0;">
+      <div style="font-size:13px;font-weight:800;color:${col};text-transform:uppercase;letter-spacing:0.8px;margin-bottom:10px;">${b.label}</div>
+      ${items}
+    </div>`
+  }).join('')
+
+  const row1 = branches.slice(0, 2)
+  const row2 = branches.slice(2, 4)
+
+  const row1HTML = row1.map((b, i) => {
+    const col = colors[i % colors.length]
+    const items = b.items.map(item =>
+      `<div style="font-size:12px;color:#344054;padding:4px 10px;background:#F9F6EE;border-radius:6px;margin-bottom:4px;border-left:3px solid ${col};">${item}</div>`
+    ).join('')
+    return `<div style="background:#FFFDF5;border:2px solid ${col};border-radius:12px;padding:14px 16px;flex:1;min-width:0;"><div style="font-size:13px;font-weight:800;color:${col};text-transform:uppercase;letter-spacing:0.8px;margin-bottom:10px;">${b.label}</div>${items}</div>`
+  }).join('<div style="width:16px;"></div>')
+
+  const row2HTML = row2.map((b, i) => {
+    const col = colors[(i + 2) % colors.length]
+    const items = b.items.map(item =>
+      `<div style="font-size:12px;color:#344054;padding:4px 10px;background:#F9F6EE;border-radius:6px;margin-bottom:4px;border-left:3px solid ${col};">${item}</div>`
+    ).join('')
+    return `<div style="background:#FFFDF5;border:2px solid ${col};border-radius:12px;padding:14px 16px;flex:1;min-width:0;"><div style="font-size:13px;font-weight:800;color:${col};text-transform:uppercase;letter-spacing:0.8px;margin-bottom:10px;">${b.label}</div>${items}</div>`
+  }).join('<div style="width:16px;"></div>')
+
+  return `<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;900&display=swap" rel="stylesheet">
+<style>${BASE_STYLES}</style>
+</head>
+<body>
+<div class="canvas">
+  <div class="brand-marker"><div class="gold-sq"><div class="yellow-dot"></div></div></div>
+  <div class="meta">${data.meta}</div>
+  <div class="gold-line"></div>
+  <div style="font-size:46px;font-weight:900;color:#0A0A0A;line-height:1.1;margin-bottom:4px;">${data.headline}</div>
+  ${data.headline_line2 ? `<div style="font-size:46px;font-weight:900;color:#C9A84C;line-height:1.1;margin-bottom:12px;">${data.headline_line2}</div>` : ''}
+  ${data.centerNode ? `
+  <div style="display:inline-block;background:#0A0A0A;color:#F5A623;font-size:14px;font-weight:800;padding:8px 20px;border-radius:20px;margin-bottom:14px;letter-spacing:0.5px;">
+    ${data.centerNode}
+  </div>` : ''}
+  <div style="display:flex;gap:16px;flex:1;margin-bottom:12px;">${row1HTML}</div>
+  ${row2HTML ? `<div style="display:flex;gap:16px;">${row2HTML}</div>` : ''}
+  ${data.takeaway ? `
+  <div style="margin-top:12px;font-size:14px;font-weight:700;color:#0A0A0A;">
+    ${data.takeawayHighlight
+      ? data.takeaway.replace(data.takeawayHighlight, `<span style="background:#F5A623;padding:0 5px;border-radius:3px;">${data.takeawayHighlight}</span>`)
+      : data.takeaway}
+  </div>` : ''}
+</div>
+</body>
+</html>`
+}
+
+export function generateDataTableHTML(data: ImageData): string {
+  const headers = data.tableHeaders || []
+  const rows = data.tableRows || []
+  const hlRow = data.tableHighlightRow ?? -1
+
+  const headerHTML = headers.map(h =>
+    `<th style="font-size:12px;font-weight:700;color:#C9A84C;text-transform:uppercase;letter-spacing:0.8px;padding:10px 14px;text-align:left;border-bottom:2px solid #C9A84C;">${h}</th>`
+  ).join('')
+
+  const rowsHTML = rows.map((r, ri) => {
+    const isHL = ri === hlRow
+    const bg = isHL ? '#0A0A0A' : ri % 2 === 0 ? '#FFFDF5' : '#FFFFFF'
+    const color = isHL ? '#FFFFFF' : '#0A0A0A'
+    const cells = r.map((cell, ci) => {
+      const isFirst = ci === 0
+      const cellColor = isHL ? (isFirst ? '#F5A623' : '#FFFFFF') : (isFirst ? '#0A0A0A' : '#344054')
+      const fw = isFirst || isHL ? '700' : '500'
+      return `<td style="font-size:13px;font-weight:${fw};color:${cellColor};padding:10px 14px;border-bottom:1px solid #EAECF0;">${cell}</td>`
+    }).join('')
+    return `<tr style="background:${bg};">${cells}${isHL ? '<td style="padding:6px 10px;border-bottom:1px solid #EAECF0;"><span style="font-size:10px;font-weight:800;background:#F5A623;color:#0A0A0A;padding:2px 8px;border-radius:4px;white-space:nowrap;">Best</span></td>' : '<td style="border-bottom:1px solid #EAECF0;"></td>'}</tr>`
+  }).join('')
+
+  return `<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;900&display=swap" rel="stylesheet">
+<style>${BASE_STYLES}</style>
+</head>
+<body>
+<div class="canvas">
+  <div class="brand-marker"><div class="gold-sq"><div class="yellow-dot"></div></div></div>
+  <div class="meta">${data.meta}</div>
+  <div class="gold-line"></div>
+  <div style="font-size:50px;font-weight:900;color:#0A0A0A;line-height:1.1;margin-bottom:4px;">${data.headline}</div>
+  ${data.headline_line2 ? `<div style="font-size:50px;font-weight:900;color:#C9A84C;line-height:1.1;margin-bottom:14px;">${data.headline_line2}</div>` : ''}
+  <div style="flex:1;overflow:hidden;">
+    <table style="width:100%;border-collapse:collapse;">
+      <thead><tr>${headerHTML}</tr></thead>
+      <tbody>${rowsHTML}</tbody>
+    </table>
+  </div>
+  ${data.insightNumber ? `
+  <div style="border:2px solid #C9A84C;border-radius:10px;padding:12px 18px;background:#FFFDF5;margin-top:10px;display:flex;align-items:center;gap:16px;">
+    <div style="font-size:40px;font-weight:900;color:#F5A623;line-height:1;">${data.insightNumber}</div>
+    <div style="font-size:14px;color:#0A0A0A;font-weight:600;">${data.insightLabel || ''}</div>
+  </div>` : ''}
+  ${data.takeaway ? `
+  <div style="margin-top:12px;font-size:14px;font-weight:700;color:#0A0A0A;">
+    ${data.takeawayHighlight
+      ? data.takeaway.replace(data.takeawayHighlight, `<span style="background:#F5A623;padding:0 5px;border-radius:3px;">${data.takeawayHighlight}</span>`)
       : data.takeaway}
   </div>` : ''}
 </div>
