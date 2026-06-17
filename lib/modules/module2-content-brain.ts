@@ -10,7 +10,6 @@ import {
   PROMPT_2B_CONTENT_GENERATOR,
   PROMPT_2C_QUALITY_CHECKER,
   PROMPT_9C_CONTENT_REQUEST,
-  PROMPT_9C_IMAGE_GENERATOR,
 } from '@/lib/prompts/p2-content'
 
 // Load last N messages for context
@@ -235,46 +234,32 @@ export async function handleContentRequest(params: {
     await saveMessage(params.client.id, 'assistant', result.draft_post)
     await send(result.draft_post)
 
-    // Generate matching image HTML
-    try {
-      const imagePrompt = PROMPT_9C_IMAGE_GENERATOR
-        .replace('{post}', result.draft_post)
-        .replace('{image_skill}', skills.image || '')
+    // Generate image from image_brief (designed together with the post — same Claude call)
+    const brief = result.image_brief
+    if (brief?.type) {
+      try {
+        // Normalize: headline_line2 → append to headline with \n
+        if (brief.headline_line2) brief.headline = `${brief.headline}\n${brief.headline_line2}`
 
-      const imageRaw = await callClaude({
-        systemPrompt: imagePrompt,
-        userMessage: 'Generate the image data JSON for this post.',
-        maxTokens: 1200,
-        temperature: 0.2,
-        module: 'MODULE_9C_IMG',
-        clientId: params.client.id,
-      })
-
-      const imgData = parseClaudeJson<any>(imageRaw)
-
-      let html = ''
-      if (imgData.type === 'comparison') {
-        html = generateComparisonHTML(imgData)
-      } else if (imgData.type === 'educational') {
-        html = generateEducationalHTML(imgData)
-      } else if (imgData.type === 'statement') {
-        html = generateStatementHTML(imgData)
-      }
-
-      if (html) {
-        if (params.channel === 'telegram') {
-          try {
-            const { htmlToImageBuffer } = await import('@/lib/utils/html-to-image')
-            const imgBuffer = await htmlToImageBuffer(html)
-            await sendTelegramPhoto(params.chatId, imgBuffer, 'Hình LinkedIn 900×900 — duyệt xong nhắn "đăng đi" để post')
-          } catch (imgErr: any) {
-            log('MODULE_9C_IMG', 'warn', `Puppeteer failed: ${imgErr.message}`)
-            await send('Viết bài xong nhưng không render được hình — thử lại sau.')
-          }
+        let html = ''
+        if (brief.type === 'comparison' && brief.rows?.length) {
+          html = generateComparisonHTML(brief)
+        } else if (brief.type === 'educational' && brief.steps?.length) {
+          html = generateEducationalHTML(brief)
+        } else {
+          // Default to statement for anything else
+          brief.type = 'statement'
+          html = generateStatementHTML(brief)
         }
+
+        if (params.channel === 'telegram') {
+          const { htmlToImageBuffer } = await import('@/lib/utils/html-to-image')
+          const imgBuffer = await htmlToImageBuffer(html)
+          await sendTelegramPhoto(params.chatId, imgBuffer, 'Hình 900×900 — nhắn "đăng đi" để post lên LinkedIn')
+        }
+      } catch (imgErr: any) {
+        log('MODULE_9C_IMG', 'warn', `Image render failed: ${imgErr.message}`)
       }
-    } catch (e: any) {
-      log('MODULE_9C_IMG', 'warn', `Image generation skipped: ${e.message}`)
     }
     return
   }

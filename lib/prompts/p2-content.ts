@@ -178,8 +178,39 @@ Everything else. Reply naturally in {language}. No corporate stiffness.
   "platforms": [],
   "needs_clarification": false,
   "clarification_question": "",
-  "chat_reply": ""
+  "chat_reply": "",
+  "image_brief": {
+    "type": "comparison" | "educational" | "statement",
+    "meta": "",
+    "headline": "",
+    "headline_line2": "",
+    "headlineHighlight": "",
+    "statNumber": "",
+    "statLabel": "",
+    "bodyText": "",
+    "rows": [],
+    "insightNumber": "",
+    "insightLabel": "",
+    "steps": [],
+    "subtitle": "",
+    "takeaway": "",
+    "takeawayHighlight": ""
+  }
 }
+
+## image_brief rules (fill this for every content_request):
+- You write the post AND design the image at the same time — they must be 100% aligned
+- image_brief.type:
+  → "comparison": ONLY when post has explicit salary/cost numbers with multiple countries
+  → "educational": ONLY when post is a clear numbered step-by-step process (3-5 steps)
+  → "statement": for story, narrative, opinion, insight, journey posts — USE THIS BY DEFAULT
+- headline + headline_line2: the core message of the post in 2 punchy lines (not a summary — the HOOK)
+- For statement: statNumber = the single most powerful number/stat in the post. If no number, leave empty.
+- bodyText: 1 short sentence — the key insight (statement only)
+- rows: only for comparison type — real numbers from the post only, no invented data
+- steps: only for educational type — extracted directly from the post steps
+- takeaway: the final punch line of the post
+- NEVER invent data not present in the post
 
 - draft_post: complete ready-to-post content (Mode A only)
 - post_content: content to publish extracted from history (Mode B only)
