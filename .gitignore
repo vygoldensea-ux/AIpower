@@ -20,3 +20,4 @@ npm-debug.log*
 # Build
 build/
 dist/
+tsconfig.tsbuildinfo
