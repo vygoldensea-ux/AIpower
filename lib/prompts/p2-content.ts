@@ -222,6 +222,7 @@ You write the post AND design the image at the same time — 100% aligned, same 
 
 → "comparison": post has salary/cost numbers with multiple countries (e.g. US $9,600 vs VN $1,600)
    Fill: rows (badge, label, value, amount), insightNumber, insightLabel
+   IMPORTANT: badge must be plain ASCII text max 4 chars (e.g. "US", "VN", "EU", "SG") — NO flag emoji, NO unicode symbols (emoji won't render in the image generator)
 
 → "mindmap": post is about tips, strategies, frameworks, "how to" with multiple angles/categories
    Fill: centerNode (topic in center), branches (2-4 branches each with 2-4 bullet items)

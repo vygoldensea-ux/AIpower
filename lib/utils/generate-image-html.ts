@@ -49,30 +49,36 @@ body { width:900px; height:900px; background:#FFFFFF; font-family:'Manrope',sans
 
 export function generateComparisonHTML(data: ImageData): string {
   const rows = data.rows || []
-  const maxAmount = Math.max(...rows.map(r => r.amount))
+  const maxAmount = Math.max(...rows.map(r => r.amount), 1)
+
+  // Strip emoji from badge — Puppeteer headless can't render flag emoji
+  const cleanBadge = (b: string) => b.replace(/[\u{1F300}-\u{1FFFF}]/gu, '').replace(/[\u{FE00}-\u{FE0F}]/gu, '').trim() || b.slice(0, 3)
 
   const rowsHTML = rows.map(r => {
-    const barWidth = Math.round((r.amount / maxAmount) * 220)
-    if (r.isHighlight) {
-      return `
-      <div style="display:flex;align-items:center;gap:8px;padding:10px 12px;border-radius:8px;background:#0A0A0A;margin-bottom:7px;">
-        <span style="font-size:11px;font-weight:800;color:#F5A623;width:36px;text-align:center;background:rgba(245,166,35,0.15);border-radius:3px;padding:2px 4px;">${r.badge}</span>
-        <span style="font-size:14px;font-weight:700;color:#FFFFFF;width:30px;">${r.label}</span>
-        <div style="flex:1;height:8px;background:rgba(255,255,255,0.1);border-radius:4px;">
-          <div style="height:8px;background:#F5A623;border-radius:4px;width:${barWidth}px;"></div>
-        </div>
-        <span style="font-size:14px;font-weight:800;color:#F5A623;width:80px;text-align:right;">${r.value}</span>
-        <span style="font-size:10px;font-weight:800;background:#F5A623;color:#0A0A0A;padding:2px 7px;border-radius:4px;white-space:nowrap;">Best Value</span>
-      </div>`
-    }
+    const pct = Math.round((r.amount / maxAmount) * 100)
+    const isHL = !!r.isHighlight
+    const bg = isHL ? '#0A0A0A' : '#FFFDF5'
+    const border = isHL ? '2px solid #F5A623' : '2px solid #E8E2D4'
+    const badgeBg = isHL ? '#F5A623' : '#C9A84C'
+    const badgeColor = '#0A0A0A'
+    const labelColor = isHL ? '#FFFFFF' : '#0A0A0A'
+    const valueColor = isHL ? '#F5A623' : '#0A0A0A'
+    const barBg = isHL ? 'rgba(255,255,255,0.12)' : '#EDE8DC'
+    const barFill = isHL ? '#F5A623' : '#C9A84C'
+    const badge = cleanBadge(r.badge)
     return `
-    <div style="display:flex;align-items:center;gap:8px;padding:9px 12px;border-radius:8px;margin-bottom:7px;">
-      <span style="font-size:11px;font-weight:700;color:#888888;width:36px;text-align:center;background:#F5F5F5;border-radius:3px;padding:2px 4px;">${r.badge}</span>
-      <span style="font-size:14px;font-weight:600;color:#0A0A0A;width:30px;">${r.label}</span>
-      <div style="flex:1;height:8px;background:#F0EDE6;border-radius:4px;">
-        <div style="height:8px;background:#C9A84C;border-radius:4px;width:${barWidth}px;"></div>
+    <div style="background:${bg};border:${border};border-radius:14px;padding:20px 24px;margin-bottom:14px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+        <div style="display:flex;align-items:center;gap:12px;">
+          <div style="background:${badgeBg};color:${badgeColor};font-size:13px;font-weight:900;padding:5px 10px;border-radius:7px;letter-spacing:0.5px;min-width:44px;text-align:center;">${badge}</div>
+          <div style="font-size:17px;font-weight:700;color:${labelColor};line-height:1.2;">${r.label}</div>
+        </div>
+        <div style="font-size:26px;font-weight:900;color:${valueColor};">${r.value}</div>
       </div>
-      <span style="font-size:14px;font-weight:800;color:#0A0A0A;width:80px;text-align:right;">${r.value}</span>
+      <div style="background:${barBg};border-radius:6px;height:12px;width:100%;">
+        <div style="background:${barFill};border-radius:6px;height:12px;width:${pct}%;transition:none;"></div>
+      </div>
+      ${isHL ? `<div style="margin-top:10px;font-size:11px;font-weight:800;color:#F5A623;letter-spacing:1px;text-transform:uppercase;">Best Value</div>` : ''}
     </div>`
   }).join('')
 
@@ -80,8 +86,12 @@ export function generateComparisonHTML(data: ImageData): string {
     ? data.headline.replace(data.headlineHighlight, `<span class="hl">${data.headlineHighlight}</span>`)
     : data.headline
 
+  const line2 = data.headline_line2
+    ? `<div style="font-size:54px;font-weight:900;color:#C9A84C;line-height:1.05;margin-bottom:8px;">${data.headline_line2}</div>`
+    : ''
+
   const takeawayHL = data.takeawayHighlight && data.takeaway
-    ? data.takeaway.replace(data.takeawayHighlight, `<span style="background:#F5A623;padding:0 5px;border-radius:3px;">${data.takeawayHighlight}</span>`)
+    ? data.takeaway.replace(data.takeawayHighlight, `<span style="background:#F5A623;color:#0A0A0A;padding:1px 6px;border-radius:3px;">${data.takeawayHighlight}</span>`)
     : data.takeaway
 
   return `<!DOCTYPE html>
@@ -97,14 +107,14 @@ export function generateComparisonHTML(data: ImageData): string {
   <div class="meta">${data.meta}</div>
   <div class="gold-line"></div>
   <div class="headline">${headlineHTML}</div>
-  <div class="note">Estimated monthly cost index, 2026</div>
-  <div style="flex:1;">${rowsHTML}</div>
+  ${line2}
+  <div style="margin-top:28px;flex:1;display:flex;flex-direction:column;justify-content:center;">${rowsHTML}</div>
   ${data.insightNumber ? `
-  <div style="border:2px solid #C9A84C;border-radius:12px;padding:14px 20px;background:#FFFDF5;margin-top:8px;">
-    <div style="font-size:44px;font-weight:900;color:#F5A623;line-height:1;">${data.insightNumber}</div>
-    <div style="font-size:14px;color:#0A0A0A;font-weight:600;margin-top:4px;">${data.insightLabel || ''}</div>
+  <div style="border:2px solid #C9A84C;border-radius:14px;padding:18px 24px;background:#FFFDF5;margin-top:12px;display:flex;align-items:center;gap:20px;">
+    <div style="font-size:48px;font-weight:900;color:#F5A623;line-height:1;">${data.insightNumber}</div>
+    <div style="font-size:15px;color:#0A0A0A;font-weight:600;line-height:1.3;">${data.insightLabel || ''}</div>
   </div>` : ''}
-  ${takeawayHL ? `<div style="margin-top:14px;font-size:15px;font-weight:700;color:#0A0A0A;">${takeawayHL}</div>` : ''}
+  ${takeawayHL ? `<div style="margin-top:16px;font-size:15px;font-weight:700;color:#0A0A0A;line-height:1.4;">${takeawayHL}</div>` : ''}
 </div>
 </body>
 </html>`
