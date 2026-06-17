@@ -22,6 +22,18 @@ const INDUSTRY_MAP: Record<string, string> = {
   'quán ăn': 'fnb',
   fashion: 'fashion',
   'thời trang': 'fashion',
+  // GoldenSea Studios / IT Outsourcing
+  'it outsourcing': 'it-outsourcing',
+  'it': 'it-outsourcing',
+  'technology': 'it-outsourcing',
+  'tech': 'it-outsourcing',
+  'software': 'it-outsourcing',
+  'goldensea': 'it-outsourcing',
+  'goldensea studios': 'it-outsourcing',
+  'creative agency': 'it-outsourcing',
+  'agency': 'it-outsourcing',
+  'ai automation': 'it-outsourcing',
+  'outsourcing': 'it-outsourcing',
 }
 
 export function loadIndustrySkills(industry: string): IndustrySkills {
